@@ -1,0 +1,4 @@
+{{- $id := .Get "id" -}}
+<span class="inline-footnote" data-footnote-id="{{ $id }}" data-footnote-content="{{ .Inner | markdownify | htmlEscape }}">
+    <sup class="footnote-number">{{ $id }}</sup>
+</span> 
