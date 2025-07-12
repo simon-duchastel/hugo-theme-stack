@@ -114,6 +114,69 @@ function populateFootnotesWidget() {
         li.innerHTML = decodeHTMLEntities(content);
         widgetList.appendChild(li);
     });
+    
+    // Set up alignment after populating
+    alignFootnotesWidget();
+}
+
+function alignFootnotesWidget() {
+    const widgetList = document.querySelector('.widget--footnotes .footnotes-list');
+    if (!widgetList) return;
+    
+    const footnotes = document.querySelectorAll('.inline-footnote');
+    const footnoteItems = widgetList.querySelectorAll('.footnote-item');
+    
+    // First pass: calculate initial positions
+    const positions: { top: number; height: number; element: HTMLElement }[] = [];
+    
+    footnotes.forEach((footnote, index) => {
+        const sup = footnote.querySelector('.footnote-number') as HTMLElement;
+        const footnoteItem = footnoteItems[index] as HTMLElement;
+        
+        if (!sup || !footnoteItem) return;
+        
+        // Calculate the Y-coordinate relative to the viewport
+        const supRect = sup.getBoundingClientRect();
+        const widgetRect = widgetList.getBoundingClientRect();
+        
+        // Align the top of the sidebar footnote box with the top of the <sup> number, plus a small offset
+        const offset = 60;
+        const relativeY = supRect.top - widgetRect.top + offset;
+        const itemHeight = footnoteItem.offsetHeight || 50; // fallback height
+        
+        positions.push({
+            top: relativeY,
+            height: itemHeight,
+            element: footnoteItem
+        });
+    });
+    
+    // Second pass: resolve overlaps
+    const minSpacing = 10; // minimum spacing between items in pixels
+    
+    for (let i = 1; i < positions.length; i++) {
+        const current = positions[i];
+        const previous = positions[i - 1];
+        
+        // Check if current item overlaps with previous item
+        const currentTop = current.top;
+        const previousBottom = previous.top + previous.height;
+        
+        if (currentTop < previousBottom + minSpacing) {
+            // Adjust current item position to avoid overlap
+            current.top = previousBottom + minSpacing;
+        }
+    }
+    
+    // Third pass: apply final positions
+    positions.forEach(({ top, element }) => {
+        element.style.position = 'absolute';
+        element.style.top = `${top}px`;
+    });
+}
+
+function updateFootnotesAlignment() {
+    alignFootnotesWidget();
 }
 
 // Call both setupFootnotes and populateFootnotesWidget on DOMContentLoaded
@@ -121,8 +184,16 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         setupFootnotes();
         populateFootnotesWidget();
+        
+        // Add scroll event listener to maintain alignment
+        window.addEventListener('scroll', updateFootnotesAlignment);
+        window.addEventListener('resize', updateFootnotesAlignment);
     });
 } else {
     setupFootnotes();
     populateFootnotesWidget();
+    
+    // Add scroll event listener to maintain alignment
+    window.addEventListener('scroll', updateFootnotesAlignment);
+    window.addEventListener('resize', updateFootnotesAlignment);
 } 
