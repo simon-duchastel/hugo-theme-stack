@@ -114,6 +114,40 @@ function populateFootnotesWidget() {
         li.innerHTML = decodeHTMLEntities(content);
         widgetList.appendChild(li);
     });
+    
+    // Set up alignment after populating
+    alignFootnotesWidget();
+}
+
+function alignFootnotesWidget() {
+    const widgetList = document.querySelector('.widget--footnotes .footnotes-list');
+    if (!widgetList) return;
+    
+    const footnotes = document.querySelectorAll('.inline-footnote');
+    const footnoteItems = widgetList.querySelectorAll('.footnote-item');
+    
+    footnotes.forEach((footnote, index) => {
+        const sup = footnote.querySelector('.footnote-number') as HTMLElement;
+        const footnoteItem = footnoteItems[index] as HTMLElement;
+        
+        if (!sup || !footnoteItem) return;
+        
+        // Calculate the Y-coordinate relative to the viewport
+        const supRect = sup.getBoundingClientRect();
+        const widgetRect = widgetList.getBoundingClientRect();
+        
+        // Calculate the relative position within the sidebar widget
+        const relativeY = supRect.top - widgetRect.top;
+        
+        // Apply the relative position to the footnote item
+        footnoteItem.style.position = 'absolute';
+        footnoteItem.style.top = `${relativeY}px`;
+        footnoteItem.style.transform = 'translateY(-50%)'; // Center vertically on the target position
+    });
+}
+
+function updateFootnotesAlignment() {
+    alignFootnotesWidget();
 }
 
 // Call both setupFootnotes and populateFootnotesWidget on DOMContentLoaded
@@ -121,8 +155,16 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         setupFootnotes();
         populateFootnotesWidget();
+        
+        // Add scroll event listener to maintain alignment
+        window.addEventListener('scroll', updateFootnotesAlignment);
+        window.addEventListener('resize', updateFootnotesAlignment);
     });
 } else {
     setupFootnotes();
     populateFootnotesWidget();
+    
+    // Add scroll event listener to maintain alignment
+    window.addEventListener('scroll', updateFootnotesAlignment);
+    window.addEventListener('resize', updateFootnotesAlignment);
 } 
