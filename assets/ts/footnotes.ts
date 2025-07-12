@@ -139,10 +139,9 @@ function alignFootnotesWidget() {
         const supRect = sup.getBoundingClientRect();
         const widgetRect = widgetList.getBoundingClientRect();
         
-        // Calculate the relative position within the sidebar widget
-        const relativeY = supRect.top - widgetRect.top;
-        
-        // Get the height of the footnote item
+        // Align the top of the sidebar footnote box with the top of the <sup> number, plus a small offset
+        const offset = 60;
+        const relativeY = supRect.top - widgetRect.top + offset;
         const itemHeight = footnoteItem.offsetHeight || 50; // fallback height
         
         positions.push({
@@ -173,7 +172,6 @@ function alignFootnotesWidget() {
     positions.forEach(({ top, element }) => {
         element.style.position = 'absolute';
         element.style.top = `${top}px`;
-        element.style.transform = 'translateY(-50%)'; // Center vertically on the target position
     });
 }
 
